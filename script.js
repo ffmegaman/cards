@@ -3,12 +3,29 @@ var dealt = false;
 var hand = new Array(6);
 var held = new Array(6);
 var deck = new Array(53);
+var drawCount = 0;
 
+var doubleDraw = confirm("Press OK to play the new version, Double Draw. Or press cancel to continue with the original.")
 
+//make a filename for an image given a given Card object
+function fname() {
+  return this.num + this.suit + ".gif";
+}
+
+//constructor for card object
+function Card(num, suit) {
+  this.num = num;
+  this.suit = suit;
+  this.fname = fname;
+}
 
 // Checks if the cards have been dealt. If dealt, draw, else deal.
 function DealDraw() {
-  if (dealt) {
+  if (dealt && doubleDraw && drawCount < 2) {
+    drawCount++;
+    Draw();
+  }
+  else if (dealt) {
     Draw();
   }
   else {
@@ -44,7 +61,9 @@ function Deal () {
   score = score - 1; //deduct 1 for bet count
   document.form1.total.value = score;
   document.images[11].src = "draw.gif";
-  Addscore();
+  if (!doubleDraw) {
+    Addscore(); // Only add score on deal when not in doubleDraw mode
+  }
 }
 
 // Hold or discard a card
@@ -71,23 +90,15 @@ function Draw() {
       document.images[i].src = hand[i].fname();
     }
   }
-  dealt = false;
-  document.images[11].src = "deal.gif";
-  score += Addscore();
-  document.form1.total.value = score;
+  if (!doubleDraw || drawCount == 2) {
+    dealt = false;
+    drawCount = 0;
+    document.images[11].src = "deal.gif";
+    score += Addscore();
+    document.form1.total.value = score;
+  }
 }
 
-//make a filename for an image given a given Card object
-function fname() {
-  return this.num + this.suit + ".gif";
-}
-
-//constructor for card object
-function Card(num, suit) {
-  this.num = num;
-  this.suit = suit;
-  this.fname = fname;
-}
 
 function Numsort(a,b) { return a - b }
 
@@ -111,18 +122,18 @@ function Addscore() {
       hand[4].suit == hand[5].suit) {
     flush = true;
   }
-  // Straight Ace Low
+  // Straight Ace Low. Example: 3,4,5,6,7
   if (nums[0] == nums[1] - 1 &&
       nums[1] == nums[2] - 1 &&
       nums[2] == nums[3] - 1 &&
       nums[3] == nums[4] - 1) {
     straight = true;
   }
-  // Straight Ace High
+  // Straight Ace High .... Hand = 1, 10, 11, 12, 13
   if (nums[0] == 1 && nums[1] == 10 && nums[2] == 11 && nums[3] == 12 && nums[4] == 13) {
     straight = true;
   }
-  //royal flush, straight flush, straight, flush
+  //royal flush, straight flush, straight, flush. Example: ALl suit heart. 1, 10, 11, 12, 13
   if (straight && flush && nums[4] == 13 && nums[0] == 1) {
     document.form1.message.value = "Royal Flush";
     return 100;
